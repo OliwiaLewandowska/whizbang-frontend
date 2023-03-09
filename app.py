@@ -8,8 +8,11 @@ import streamlit as st
 from google.oauth2 import service_account
 from google.cloud import bigquery
 from random import randint
+from wordcloud import WordCloud
+from nltk.corpus import stopwords
 
-st.set_page_config(layout="wide")
+#st.set_page_config(layout="wide")
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 # Create API client.
 
@@ -87,6 +90,47 @@ if textauto:
 
 # display the Plotly chart directly in Streamlit
 st.plotly_chart(fig)
+
+
+@st.cache_data(ttl=600)
+def run_query(query):
+    query_job = client.query(query)
+    rows_raw = query_job.result()
+    # Convert to list of dicts. Required for st.cache_data to hash the return value.
+    rows = [dict(row) for row in rows_raw]
+    return rows
+
+text_per_id = run_query("""SELECT * FROM `whizbang.whizbang_dataset.text_per_id_1000`
+                        ORDER BY _char_count DESC
+                        LIMIT 50""")
+
+text_per_id = pd.DataFrame(text_per_id)
+
+text = text_per_id[text_per_id['_id'] == sel_id]['_clean_text'].values[0]
+
+stopwords = stopwords.words('english')
+
+context_stopwords = ['still','get', 'dont','cant','game','would', 'games', 'play', 'playing', 'played', 'player', 'players', 'playable']
+
+stopwords.extend(context_stopwords)
+
+wordcloud = WordCloud(background_color="white",
+                      max_words=50,
+                      width=600,
+                      height=200,
+                      min_font_size=6,
+                      collocations=False,
+                      stopwords = stopwords
+                      ).generate(text)
+
+
+plt.figure(figsize=(12, 8))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.axis('off')
+plt.show()
+st.pyplot()
+
+
 
 st.dataframe(df_game, use_container_width=True)
 
