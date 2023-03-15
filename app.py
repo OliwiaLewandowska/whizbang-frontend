@@ -1,18 +1,13 @@
 import streamlit as st
 import requests
-import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
-import streamlit as st
-from google.oauth2 import service_account
-from google.cloud import bigquery
 from random import randint
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
 from annotated_text import annotated_text
 from topics import topics_dict, name_id_mapping
-import requests
 from streamlit_plotly_events import plotly_events
 
 

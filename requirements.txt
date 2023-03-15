@@ -1,8 +1,11 @@
+htbuilder==0.6.1
+more-itertools==9.1.0
+pi==0.1.2
+st-annotated-text==3.0.0
 streamlit
 requests
 plotly
 matplotlib
 wordcloud
 nltk
-annotated_text
 streamlit_plotly_events
