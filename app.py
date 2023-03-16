@@ -71,7 +71,7 @@ else:
     col2.metric("Secondary Genre", secondary_genre)
 col3.metric("Number of Reviews", total_reviews)
 col4.metric("Voted up", voted_up)
-col5.metric("Share of Positive Sentiment", share_positive, value_color="green")
+col5.metric("Share of Positive Sentiment", share_positive)
 
 '---'
 
