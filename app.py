@@ -71,7 +71,7 @@ else:
     col2.metric("Secondary Genre", secondary_genre)
 col3.metric("Number of Reviews", total_reviews)
 col4.metric("Voted up", voted_up)
-col5.metric("Share of Positive Sentiment", share_positive)
+col5.metric("Share of Positive Sentiment", share_positive, value_color="green")
 
 '---'
 
@@ -195,6 +195,7 @@ df = pd.DataFrame(topic_per_date['topic_per_date'])
 
 if selected:
         topic = selected[0]['y']
+        st.subheader(f'Share of positive and negative sentiment for {topic} ')
         fig2 = plot_yearly_avg_weighted(topic, df)
         st.plotly_chart(fig2, use_container_width=True)
 
