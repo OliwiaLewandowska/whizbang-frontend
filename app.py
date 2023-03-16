@@ -141,10 +141,10 @@ y1 = [i.replace('t_', '') for i in list(sorted_topics.keys())]
 fig = go.Figure()
 
 
-fig.add_trace(go.Bar(x=x1, y=y1, marker=dict(color='blue'), orientation ='h'))
+fig.add_trace(go.Bar(x=x1[5:], y=y1[5:], marker=dict(color='blue'), orientation ='h'))
 fig.update_layout(
     width=900,
-    height=900,
+    height=600,
     xaxis_title='Frequency',
     yaxis_title='Topic',
     title=None,
@@ -157,37 +157,6 @@ fig.update_layout(
 )
 
 
-
-# stopwords = stopwords.words('english')
-# context_stopwords = ['still','get', 'dont','cant','game','would', 'games', 'play', 'playing', 'played', 'player', 'players', 'playable']
-# stopwords.extend(context_stopwords)
-
-# wordcloud = WordCloud(background_color="white",
-#                       max_words=50,
-#                       width=800,
-#                       height=600,
-#                       min_font_size=6,
-#                       collocations=False,
-#                       stopwords = stopwords
-#                       ).generate(text)
-
-
-# plt.figure(figsize=(8, 6))
-# plt.imshow(wordcloud, interpolation='bilinear')
-# plt.axis('off')
-
-#Reviews display
-
-# reviews = pd.read_csv('raw_data/reviews_topics_1000.csv')
-# reviews = reviews.rename(columns=lambda x: x.replace('_', ''))
-
-# def display_reviews(topic, sel_id):
-
-#     per_topic = reviews[(reviews[topic] == 1) & (reviews['id'] == sel_id) & (reviews['charcount'] < 200)].sort_values(by = 'votesup', ascending = False)
-#     top_reviews  = per_topic['review']
-#     return top_reviews
-
-
 col1, col2 = st.columns([1, 1 ])
 
 with col1:
@@ -196,7 +165,7 @@ with col1:
     selected = plotly_events(
     fig,
     click_event=True,
-    override_height=900
+    override_height=600
             )
 
 with col2:
@@ -213,14 +182,12 @@ with col2:
                 #st.write(review.replace("[","<").replace("]","/>"))
                 #st.write('---')
                 html_string += f'<p style="font-family: \'IBM Plex Sans\', sans-serif;">{review.replace("[","<").replace("]","/>")}</p><br><hr>'
-            html(html_string, height=900, scrolling=True)
+            html(html_string, height=600, scrolling=True)
         else:
             st.subheader('Most popular reviews')
             st.write('Click on a topic to see the most popular reviews for that topic')
 
-
-
-
+#Sentiment Over time
 
 topic_per_date = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/alldata').json()
 
