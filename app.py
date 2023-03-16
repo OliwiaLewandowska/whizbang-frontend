@@ -18,11 +18,19 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 
 #st.write("""<div style = 'text-align: center'><h1>Whizbang!</h1></div>""", unsafe_allow_html=True)
 
+emoji_dict = {"gameplay":"🎮","graphics":"🎨","story":"📚","sound":"🔉","controls":"🕹️","multiplayer":"⛹️‍♀️","crossplay":"🎭","ai":"🤖",
+ "performance":"💪","price":"💰","length":"📏","difficulty":"👷","replayability":"🌟","fun":"🦩","immersion":"🌊",
+ "art":"🖼️","pacing":"🏃‍♀️","variety":"🔢","balance":"⚖️","bugs":"🐛"}
 
-cola, colb, colc = st.columns(3)
+cola, colb, colc, cold, cole = st.columns([1,3,1,3,1])
+
 with colb:
     image = Image.open('logo.png')
     st.image(image)
+
+with cold:
+    sel_name = st.selectbox('Select Game', name_id_mapping.keys())
+
 
 
 #st.markdown('''
@@ -30,9 +38,7 @@ with colb:
 #''')
 
 #Game selector
-cola, colb, colc = st.columns(3)
-with colb:
-    sel_name = st.selectbox('Select Game', name_id_mapping.keys())
+
 
 sel_id = name_id_mapping[sel_name]
 
@@ -59,9 +65,11 @@ with col2:
 total_reviews = game_info['total_reviews']
 voted_up = game_info['voted_up']
 share_positive = f'{round((voted_up / total_reviews),2) * 100}%'
+primary_genre = game_info['genre1']
+secondary_genre = game_info['genre2']
 
 
-col1, col2, col3 = st.columns(3)
+col0, col1, col2, col3 = st.columns(4)
 col1.metric("Number of Reviews", total_reviews)
 col2.metric("Voted up", voted_up)
 col3.metric("Share of Positive Sentiment", share_positive)
@@ -149,10 +157,9 @@ with col2:
 
     with st.container():
 
-    #with st.container( style = {'max-height': '900px', 'overflow-y': 'scroll'}):
         if selected:
             topic = selected[0]['y']
-            st.subheader(f'Most popular reviews talking about: {topic.capitalize()}')
+            st.subheader(f'Most popular reviews talking about: {emoji_dict[topic]} {topic.capitalize()}')
             reviews = game_info['top_reviews_per_topic'][f't_{topic}']
             html_string = ""
             for review in reviews:
