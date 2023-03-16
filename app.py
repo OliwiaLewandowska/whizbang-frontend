@@ -7,10 +7,13 @@ from random import randint
 from wordcloud import WordCloud
 from nltk.corpus import stopwords
 from annotated_text import annotated_text
-from topics import topics_dict, name_id_mapping
+from topics import topics_dict, name_id_mapping, plot_yearly_avg_weighted
 from streamlit_plotly_events import plotly_events
 from PIL import Image
 from streamlit.components.v1 import html
+import numpy as np
+import pandas as pd
+
 
 
 st.set_page_config(layout="wide")
@@ -40,14 +43,15 @@ with cold:
 #Game selector
 
 
+'---'
 sel_id = name_id_mapping[sel_name]
 
 #Connect to API
 game_info = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/game?id={sel_id}').json()
 
-#Display game image and GPT-3
 
-'---'
+
+#Display game image and GPT-3
 
 col1, col2 = st.columns([1, 3 ])
 
@@ -58,10 +62,6 @@ with col2:
     st.subheader( 'AI Generated review')
     game_info['summary_review']
 
-
-
-
-
 total_reviews = game_info['total_reviews']
 voted_up = game_info['voted_up']
 share_positive = f'{round((voted_up / total_reviews),2) * 100}%'
@@ -69,10 +69,70 @@ primary_genre = game_info['genre1']
 secondary_genre = game_info['genre2']
 
 
-col0, col1, col2, col3 = st.columns(4)
-col1.metric("Number of Reviews", total_reviews)
-col2.metric("Voted up", voted_up)
-col3.metric("Share of Positive Sentiment", share_positive)
+col1, col2, col3, col4, col5 = st.columns([1, 1, 2, 2, 2 ])
+col1.metric("Primary Genre", primary_genre)
+if secondary_genre == 0:
+    st.write('')
+else:
+    col2.metric("Secondary Genre", secondary_genre)
+col3.metric("Number of Reviews", total_reviews)
+col4.metric("Voted up", voted_up)
+col5.metric("Share of Positive Sentiment", share_positive)
+
+'---'
+
+
+#Display Forecast
+
+
+st.subheader('Cummulative Sales Over Time & Forecast')
+
+dates = list(game_info['sales_data'].keys())[0:-1]
+
+actual = list(game_info['sales_data'].values())[0:-1]
+predicted = list(game_info['sales_data'].values())#.pop(-2)
+predicted.pop(-2)
+
+actual_cum = np.cumsum(actual)
+predicted_cum = np.cumsum(predicted)
+
+# Find the index of the first non-zero value in y_values
+start_index = next((i for i, y in enumerate(actual) if y > 0), len(actual))
+
+# Adjust the x_values to start at the correct index
+dates = dates[start_index:]
+
+# Create a Plotly figure
+fig = go.Figure()
+
+# Add a trace for the timeseries & add color
+
+fig.add_trace(go.Scatter(x=dates, y=predicted_cum[start_index:], mode='lines', name = 'predicted', line=dict(color='red', dash = 'dash', width = 3)))
+fig.add_trace(go.Scatter(x=dates, y=actual_cum[start_index:], mode='lines', name = 'actual', line=dict(color='lightgrey', width = 3)))
+
+# Update the layout
+fig.update_layout(
+    #title='Sales prediction',
+    margin=dict(t=0),
+    xaxis_title='Date',
+    yaxis_title='Total Sales',
+    xaxis_tickformat='<br>%Y'
+)
+
+
+col1, col2 = st.columns([5, 1])
+
+with col1:
+    st.plotly_chart(fig, use_container_width=True)
+
+with col2:
+
+    with st.container():
+        st.metric("Predicted Sales", '{:,}'.format(int(predicted[-1])))
+        '---'
+    with st.container():
+        st.metric("Actual Sales", '{:,}'.format(int(actual[-1])))
+
 
 '---'
 
@@ -91,10 +151,10 @@ y1 = [i.replace('t_', '') for i in list(sorted_topics.keys())]
 fig = go.Figure()
 
 
-fig.add_trace(go.Bar(x=x1, y=y1, marker=dict(color='lightgreen'), orientation ='h'))
+fig.add_trace(go.Bar(x=x1[5:], y=y1[5:], marker=dict(color='blue'), orientation ='h'))
 fig.update_layout(
-    width=600,
-    height=900,
+    width=900,
+    height=600,
     xaxis_title='Frequency',
     yaxis_title='Topic',
     title=None,
@@ -107,41 +167,6 @@ fig.update_layout(
 )
 
 
-
-
-
-
-
-# stopwords = stopwords.words('english')
-# context_stopwords = ['still','get', 'dont','cant','game','would', 'games', 'play', 'playing', 'played', 'player', 'players', 'playable']
-# stopwords.extend(context_stopwords)
-
-# wordcloud = WordCloud(background_color="white",
-#                       max_words=50,
-#                       width=800,
-#                       height=600,
-#                       min_font_size=6,
-#                       collocations=False,
-#                       stopwords = stopwords
-#                       ).generate(text)
-
-
-# plt.figure(figsize=(8, 6))
-# plt.imshow(wordcloud, interpolation='bilinear')
-# plt.axis('off')
-
-#Reviews display
-
-# reviews = pd.read_csv('raw_data/reviews_topics_1000.csv')
-# reviews = reviews.rename(columns=lambda x: x.replace('_', ''))
-
-# def display_reviews(topic, sel_id):
-
-#     per_topic = reviews[(reviews[topic] == 1) & (reviews['id'] == sel_id) & (reviews['charcount'] < 200)].sort_values(by = 'votesup', ascending = False)
-#     top_reviews  = per_topic['review']
-#     return top_reviews
-
-
 col1, col2 = st.columns([1, 1 ])
 
 with col1:
@@ -150,7 +175,7 @@ with col1:
     selected = plotly_events(
     fig,
     click_event=True,
-    override_height=900
+    override_height=600
             )
 
 with col2:
@@ -166,10 +191,22 @@ with col2:
                 #st.write(review.replace("[","<").replace("]","/>"))
                 #st.write('---')
                 html_string += f'<p style="font-family: \'IBM Plex Sans\', sans-serif;">{review.replace("[","<").replace("]","/>")}</p><br><hr>'
-            html(html_string, height=900, scrolling=True)
+            html(html_string, height=600, scrolling=True)
         else:
             st.subheader('Most popular reviews')
             st.write('Click on a topic to see the most popular reviews for that topic')
+
+#Sentiment Over time
+
+topic_per_date = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/alldata').json()
+
+df = pd.DataFrame(topic_per_date['topic_per_date'])
+
+if selected:
+        topic = selected[0]['y']
+        st.subheader(f'Share of positive and negative sentiment for {topic} ')
+        fig2 = plot_yearly_avg_weighted(topic, df)
+        st.plotly_chart(fig2, use_container_width=True)
 
     # st.write('<p style="font-size:24px;"><b>Uncover most popular reviews per topic</b></p>',unsafe_allow_html=True)
     # if st.button('AI'):
