@@ -21,11 +21,19 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 
 #st.write("""<div style = 'text-align: center'><h1>Whizbang!</h1></div>""", unsafe_allow_html=True)
 
+emoji_dict = {"gameplay":"🎮","graphics":"🎨","story":"📚","sound":"🔉","controls":"🕹️","multiplayer":"⛹️‍♀️","crossplay":"🎭","ai":"🤖",
+ "performance":"💪","price":"💰","length":"📏","difficulty":"👷","replayability":"🌟","fun":"🦩","immersion":"🌊",
+ "art":"🖼️","pacing":"🏃‍♀️","variety":"🔢","balance":"⚖️","bugs":"🐛"}
 
-cola, colb, colc = st.columns(3)
+cola, colb, colc, cold, cole = st.columns([1,3,1,3,1])
+
 with colb:
     image = Image.open('logo.png')
     st.image(image)
+
+with cold:
+    sel_name = st.selectbox('Select Game', name_id_mapping.keys())
+
 
 
 #st.markdown('''
@@ -33,9 +41,7 @@ with colb:
 #''')
 
 #Game selector
-cola, colb, colc = st.columns(3)
-with colb:
-    sel_name = st.selectbox('Select Game', name_id_mapping.keys())
+
 
 '---'
 sel_id = name_id_mapping[sel_name]
@@ -75,7 +81,9 @@ col5.metric("Share of Positive Sentiment", share_positive)
 
 '---'
 
+
 #Display Forecast
+
 
 st.subheader('Cummulative Sales Over Time & Forecast')
 
@@ -111,6 +119,7 @@ fig.update_layout(
     xaxis_tickformat='<br>%Y'
 )
 
+
 col1, col2 = st.columns([5, 1])
 
 with col1:
@@ -123,6 +132,7 @@ with col2:
         '---'
     with st.container():
         st.metric("Actual Sales", '{:,}'.format(int(actual[-1])))
+
 
 '---'
 
@@ -172,10 +182,9 @@ with col2:
 
     with st.container():
 
-    #with st.container( style = {'max-height': '900px', 'overflow-y': 'scroll'}):
         if selected:
             topic = selected[0]['y']
-            st.subheader(f'Most popular reviews talking about: {topic.capitalize()}')
+            st.subheader(f'Most popular reviews talking about: {emoji_dict[topic]} {topic.capitalize()}')
             reviews = game_info['top_reviews_per_topic'][f't_{topic}']
             html_string = ""
             for review in reviews:
