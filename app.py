@@ -9,20 +9,31 @@ from nltk.corpus import stopwords
 from annotated_text import annotated_text
 from topics import topics_dict, name_id_mapping
 from streamlit_plotly_events import plotly_events
+from PIL import Image
+from streamlit.components.v1 import html
 
 
 st.set_page_config(layout="wide")
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
-st.write("""<div style = 'text-align: center'><h1>Whizbang!</h1></div>""", unsafe_allow_html=True)
+#st.write("""<div style = 'text-align: center'><h1>Whizbang!</h1></div>""", unsafe_allow_html=True)
 
-st.markdown('''
+
+cola, colb, colc = st.columns(3)
+with colb:
+    image = Image.open('logo.png')
+    st.image(image)
+
+
+#st.markdown('''
 #### Whizbang unlocks the power of predictive insights with cutting-edge RNN network, forecasting the future of computer game sales with unparalleled accuracy.
-''')
+#''')
 
 #Game selector
+cola, colb, colc = st.columns(3)
+with colb:
+    sel_name = st.selectbox('Select Game', name_id_mapping.keys())
 
-sel_name = st.selectbox('Select Game', name_id_mapping.keys())
 sel_id = name_id_mapping[sel_name]
 
 #Connect to API
@@ -38,10 +49,10 @@ with col1:
     st.image(game_info['image'], width=300)
 
 with col2:
-    st.subheader( 'Auto-generated summary of all reviews ')
+    st.subheader( 'AI Generated review')
     game_info['summary_review']
 
-'---'
+
 
 
 
@@ -49,12 +60,13 @@ total_reviews = game_info['total_reviews']
 voted_up = game_info['voted_up']
 share_positive = f'{round((voted_up / total_reviews),2) * 100}%'
 
+
 col1, col2, col3 = st.columns(3)
-col1.metric("Number of Reviews", total_reviews, f'{randint(50,90)}%')
-col2.metric("Voted up", voted_up, f'{randint(50,90)}%')
-col3.metric("Share of Positive Sentiment", share_positive, f"{randint(-10,10)}%")
+col1.metric("Number of Reviews", total_reviews)
+col2.metric("Voted up", voted_up)
+col3.metric("Share of Positive Sentiment", share_positive)
 
-
+'---'
 
 logy = True  # to make small values visible
 textauto = True  # to write plot label
@@ -72,7 +84,19 @@ fig = go.Figure()
 
 
 fig.add_trace(go.Bar(x=x1, y=y1, marker=dict(color='lightgreen'), orientation ='h'))
-fig.update_layout(width=800, height=900, xaxis_title='Frequency', yaxis_title='Topic', title=None, margin=dict(t=0))
+fig.update_layout(
+    width=600,
+    height=900,
+    xaxis_title='Frequency',
+    yaxis_title='Topic',
+    title=None,
+    margin=dict(t=0),
+    plot_bgcolor='rgb(255, 255, 255)',
+    paper_bgcolor='rgb(255, 255, 255)',
+    # don't display modebar
+    modebar=dict(orientation="v"),
+
+)
 
 
 
@@ -103,22 +127,23 @@ fig.update_layout(width=800, height=900, xaxis_title='Frequency', yaxis_title='T
 # reviews = pd.read_csv('raw_data/reviews_topics_1000.csv')
 # reviews = reviews.rename(columns=lambda x: x.replace('_', ''))
 
-def display_reviews(topic, sel_id):
+# def display_reviews(topic, sel_id):
 
-    per_topic = reviews[(reviews[topic] == 1) & (reviews['id'] == sel_id) & (reviews['charcount'] < 200)].sort_values(by = 'votesup', ascending = False)
-    top_reviews  = per_topic['review']
-    return top_reviews
+#     per_topic = reviews[(reviews[topic] == 1) & (reviews['id'] == sel_id) & (reviews['charcount'] < 200)].sort_values(by = 'votesup', ascending = False)
+#     top_reviews  = per_topic['review']
+#     return top_reviews
 
 
 col1, col2 = st.columns([1, 1 ])
 
 with col1:
     st.subheader('Frequency of topics in reviews')
+
     selected = plotly_events(
     fig,
     click_event=True,
+    override_height=900
             )
-    st.write('<p style="font-size:24px;"><b>Wordcloud of game reviews</b></p>',unsafe_allow_html=True)
 
 with col2:
 
@@ -126,14 +151,18 @@ with col2:
 
     #with st.container( style = {'max-height': '900px', 'overflow-y': 'scroll'}):
         if selected:
-            st.subheader('Most popular reviews per topic')
             topic = selected[0]['y']
+            st.subheader(f'Most popular reviews talking about: {topic.capitalize()}')
             reviews = game_info['top_reviews_per_topic'][f't_{topic}']
-            all_reviews = []
+            html_string = ""
             for review in reviews:
-                #all_reviews.append(f'{review} \n --- \n')
-                st.write(review)
-                st.write('---')
+                #st.write(review.replace("[","<").replace("]","/>"))
+                #st.write('---')
+                html_string += f'<p style="font-family: \'IBM Plex Sans\', sans-serif;">{review.replace("[","<").replace("]","/>")}</p><br><hr>'
+            html(html_string, height=900, scrolling=True)
+        else:
+            st.subheader('Most popular reviews')
+            st.write('Click on a topic to see the most popular reviews for that topic')
 
     # st.write('<p style="font-size:24px;"><b>Uncover most popular reviews per topic</b></p>',unsafe_allow_html=True)
     # if st.button('AI'):
