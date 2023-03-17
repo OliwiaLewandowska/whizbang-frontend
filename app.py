@@ -205,16 +205,37 @@ with col2:
             html_string += f'<p style="font-family: \'IBM Plex Sans\', sans-serif;">{review.replace("[","<").replace("]","/>")}</p><br><hr>'
         html(html_string, height=600, scrolling=True)
 
+
+'---'
+
 #Sentiment Over time
 
 data_all = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/alldata').json()
 
 topic_per_date = pd.DataFrame(data_all['topic_per_date'])
+col1, col2 = st.columns([2, 1 ])
+with col1:
+    topic = default_topic if not selected else selected[0]['y']
+    st.subheader(f'Share of positive and negative sentiment for: {emoji_dict[topic]} {topic.capitalize()}')
+    fig2 = plot_yearly_avg_weighted(topic, topic_per_date)
+    st.plotly_chart(fig2, use_container_width=True)
+with col2:
+    pass
 
-topic = default_topic if not selected else selected[0]['y']
-st.subheader(f'Share of positive and negative sentiment for: {emoji_dict[topic]} {topic.capitalize()}')
-fig2 = plot_yearly_avg_weighted(topic, topic_per_date)
-st.plotly_chart(fig2, use_container_width=True)
+
+## Most similar games
+'---'
+st.subheader('Most similar games, by topic sentiment')
+col1, col2, col3 = st.columns([1, 1, 1])
+columns = [col1, col2, col3 ]
+colindex = 0
+for id in game_info["closest_games"].keys():
+    game_response = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/game?id={id}').json()
+    with columns[colindex]:
+        st.write(game_response['name'])
+        st.image(game_response['image'], width=200)
+        colindex += 1
+
 
 
 

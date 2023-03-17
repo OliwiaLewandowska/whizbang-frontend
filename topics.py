@@ -50,8 +50,8 @@ def plot_yearly_avg_weighted(topic, df):
     # set layout with dual y-axes
     layout = go.Layout(
         #title=f'Negative and Positive Reviews of {topic.upper()} Weighted by Likes',
-        yaxis=dict(title='Reviews'), margin=dict(t=0))
+        yaxis=dict(title='Reviews'), margin=dict(t=0), showlegend=False)
      # combine the traces and layout into a figure
     fig = go.Figure(data=[line_positive, line_negative], layout=layout)
-     # display the figure
+
     return fig
