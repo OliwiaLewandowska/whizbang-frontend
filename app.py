@@ -139,40 +139,53 @@ with col2:
 
 '---'
 
-logy = True  # to make small values visible
-textauto = True  # to write plot label
-title = f'{sel_name}'
+#Load & transform data for barchart
 
-sorted_topics = dict(sorted(game_info['topic_names'].items(), key=lambda x: x[1]))
+game_info = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/game?id=4720').json()
+df = pd.DataFrame(game_info['ts_reviews'])
 
+df_new = df.iloc[:,2:42]
 
-# Create data for the third bar chart
-x1 = list(sorted_topics.values())
-y1 = [i.replace('t_', '') for i in list(sorted_topics.keys())]
+result = df_new.sum(axis=0)
 
-default_topic = y1[-1]
+#Subset only the values that have positive/negative in the name
+positive = result[result.index.str.contains('positive')]
+negative = result[result.index.str.contains('negative')]
 
-# Add the second bar chart to the subplot
-#fig = go.Figure(data=[go.Bar(x=x1, y=y1, marker=dict(color='lightgreen'), orientation ='h')])
-fig = go.Figure()
+positive.index = positive.index.str.replace('t_','').str.replace('_positive','')
+negative.index = negative.index.str.replace('t_','').str.replace('_negative','')
 
+all_numpy = np.array(positive) + np.array(negative)
 
-fig.add_trace(go.Bar(x=x1[5:], y=y1[5:], marker=dict(color='blue'), orientation ='h'))
-fig.update_layout(
-    width=900,
-    height=600,
-    xaxis_title='Frequency',
-    yaxis_title='Topic',
-    title=None,
-    margin=dict(t=0),
-    plot_bgcolor='rgb(255, 255, 255)',
-    paper_bgcolor='rgb(255, 255, 255)',
-    # don't display modebar
-    modebar=dict(orientation="v"),
+all = pd.Series(all_numpy, index = positive.index)
+all_sorted = all.sort_values(ascending=True)
 
-)
+#Sort positive with the order of all
+positive_sorted = positive.reindex(all_sorted.index)
+negative_sorted = negative.reindex(all_sorted.index)
 
+categories = list(positive.index)
+positive = list(positive_sorted)
+negative = list(negative_sorted)
 
+default_topic = categories[-1]
+
+# Create the positive/negative per topics CHART
+
+trace1 = go.Bar(x=positive, y=categories, name='Positive', marker_color='green', orientation='h')
+trace2 = go.Bar(x=negative, y=categories, name='Negative', marker_color='red', orientation='h')
+
+# Define the layout
+layout = go.Layout(
+                   xaxis_title='Frequency of a Topic in Reviews',
+                   barmode='relative',
+                   width=900,
+                   height=900,
+                   margin=dict(t=0)
+                   )
+
+# Create the figure
+fig = go.Figure(data=[trace1, trace2], layout=layout)
 
 
 col1, col2 = st.columns([1, 1 ])
@@ -185,11 +198,6 @@ with col1:
     click_event=True,
     override_height=600
             )
-
-
-
-
-
 
 with col2:
 
@@ -208,20 +216,78 @@ with col2:
 
 '---'
 
+
+#Topics per Genre
+
+genre = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/alldata').json()
+df = pd.DataFrame(genre['topic_per_game'])
+topics = [column for column in df.columns if column.startswith('t_')]
+df_topics = df[topics]
+
+sums = df_topics.sum()
+sorted_sums = sums.sort_values(ascending=False)
+
+top_10 = sorted_sums.head(10)
+
+columns_to_keep = list(top_10.index)
+columns_to_keep.append('Genre 1')
+df_new = df[columns_to_keep]
+
+grouped = df_new.groupby('Genre 1').sum().reset_index()
+grouped_sorted = grouped.sort_values(by='t_story', ascending=False)
+small_grouped = grouped_sorted.iloc[0:10]
+
+#Topics per Genre VISUALISATION
+
+data = {
+    'Genre': list(small_grouped['Genre 1']),
+    'Story': list(small_grouped.iloc[:,1]),
+    'Fun': list(small_grouped.iloc[:,2]),
+    'Gameplay': list(small_grouped.iloc[:,3]),
+    'Bugs': list(small_grouped.iloc[:,4]),
+    'Price': list(small_grouped.iloc[:,5]),
+    'Sound': list(small_grouped.iloc[:,6]),
+    'Immersion': list(small_grouped.iloc[:,7]),
+    'Art': list(small_grouped.iloc[:,8]),
+    'Controls': list(small_grouped.iloc[:,9]),
+    'Graphics': list(small_grouped.iloc[:,10])
+}
+df = pd.DataFrame(data)
+
+# calculate percentages
+df_perc = df.set_index('Genre').apply(lambda x: x/x.sum(), axis=1)
+
+# create bar chart
+fig3 = go.Figure()
+for i, topic in enumerate(df.columns[1:]):
+    fig3.add_trace(go.Bar(
+        x=df['Genre'],
+        y=df_perc[topic],
+        name=topic,
+        marker_color=px.colors.qualitative.Plotly[i]
+    ))
+
+fig3.update_layout(
+    xaxis_title='Genre',
+    yaxis_title='% of Total',
+    barmode='stack',
+    margin=dict(t=0)
+)
+
 #Sentiment Over time
 
 data_all = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/alldata').json()
 
 topic_per_date = pd.DataFrame(data_all['topic_per_date'])
-col1, col2 = st.columns([2, 1 ])
+col1, col2 = st.columns([1, 1 ])
 with col1:
     topic = default_topic if not selected else selected[0]['y']
     st.subheader(f'Share of Positive and Negative Sentiment for: {emoji_dict[topic]} {topic.capitalize()}')
     fig2 = plot_yearly_avg_weighted(topic, topic_per_date)
     st.plotly_chart(fig2, use_container_width=True)
 with col2:
-    pass
-
+    st.subheader(f'Distribution of Topics per Genre')
+    st.plotly_chart(fig3, use_container_width=True)
 
 ## Most similar games
 '---'
@@ -235,44 +301,3 @@ for id in game_info["closest_games"].keys():
         st.write(game_response['name'])
         st.image(game_response['image'], width=200)
         colindex += 1
-
-
-
-
-    # st.write('<p style="font-size:24px;"><b>Uncover most popular reviews per topic</b></p>',unsafe_allow_html=True)
-    # if st.button('AI'):
-    #     topic = 'ai'
-    #     for i in range(5):
-    #         review = display_reviews(topic, sel_id)
-    #         #st.write(review.iloc[i])
-    #         words = review.iloc[i].split()
-    #         annotated_words = []
-    #         for i, word in enumerate(words):
-    #             if i < len(words) - 1 and words[i].lower() == "ai":
-    #                 annotated_words.append((word, "*"))
-    #             else:
-    #                 annotated_words.append(f"{word} ")
-    #         annotated_text(*annotated_words)
-    #         st.write("---")
-
-
-#selected_points = plotly_events(fig, hover_event = True)
-
-#st.session_state.counter = 0
-
-
-
-#st.write(selected_points['x'])
-#print(selected_points)
-
-# string = "This is a review about ai yes"
-# words = string.split()  # split the string into a list of words
-# annotated_words = []
-# for i, word in enumerate(words):
-#     if i < len(words) - 1 and words[i] == "ai":
-#         annotated_words.append((word, "*"))
-#     else:
-#         annotated_words.append(f"{word} ")
-
-# with st.echo():
-#     annotated_text(*annotated_words)
