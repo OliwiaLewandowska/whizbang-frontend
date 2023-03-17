@@ -19,6 +19,9 @@ import pandas as pd
 st.set_page_config(layout="wide", page_title="Whizbang !", page_icon=Image.open('favicon.png'))
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
+
+
+
 #st.write("""<div style = 'text-align: center'><h1>Whizbang!</h1></div>""", unsafe_allow_html=True)
 
 emoji_dict = {"gameplay":"🎮","graphics":"🎨","story":"📚","sound":"🔉","controls":"🕹️","multiplayer":"⛹️‍♀️","crossplay":"🎭","ai":"🤖",
@@ -142,9 +145,12 @@ title = f'{sel_name}'
 
 sorted_topics = dict(sorted(game_info['topic_names'].items(), key=lambda x: x[1]))
 
+
 # Create data for the third bar chart
 x1 = list(sorted_topics.values())
 y1 = [i.replace('t_', '') for i in list(sorted_topics.keys())]
+
+default_topic = y1[-1]
 
 # Add the second bar chart to the subplot
 #fig = go.Figure(data=[go.Bar(x=x1, y=y1, marker=dict(color='lightgreen'), orientation ='h')])
@@ -167,6 +173,8 @@ fig.update_layout(
 )
 
 
+
+
 col1, col2 = st.columns([1, 1 ])
 
 with col1:
@@ -178,23 +186,24 @@ with col1:
     override_height=600
             )
 
+
+
+
+
+
 with col2:
 
     with st.container():
 
-        if selected:
-            topic = selected[0]['y']
-            st.subheader(f'Most popular reviews talking about: {emoji_dict[topic]} {topic.capitalize()}')
-            reviews = game_info['top_reviews_per_topic'][f't_{topic}']
-            html_string = ""
-            for review in reviews:
-                #st.write(review.replace("[","<").replace("]","/>"))
-                #st.write('---')
-                html_string += f'<p style="font-family: \'IBM Plex Sans\', sans-serif;">{review.replace("[","<").replace("]","/>")}</p><br><hr>'
-            html(html_string, height=600, scrolling=True)
-        else:
-            st.subheader('Most popular reviews')
-            st.write('Click on a topic to see the most popular reviews for that topic')
+        topic = default_topic if not selected else selected[0]['y']
+        st.subheader(f'Most popular reviews talking about: {emoji_dict[topic]} {topic.capitalize()}')
+        reviews = game_info['top_reviews_per_topic'][f't_{topic}']
+        html_string = ""
+        for review in reviews:
+            #st.write(review.replace("[","<").replace("]","/>"))
+            #st.write('---')
+            html_string += f'<p style="font-family: \'IBM Plex Sans\', sans-serif;">{review.replace("[","<").replace("]","/>")}</p><br><hr>'
+        html(html_string, height=600, scrolling=True)
 
 #Sentiment Over time
 
@@ -202,11 +211,10 @@ data_all = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/alldata').jso
 
 topic_per_date = pd.DataFrame(data_all['topic_per_date'])
 
-if selected:
-        topic = selected[0]['y']
-        st.subheader(f'Share of positive and negative sentiment for: {emoji_dict[topic]} {topic.capitalize()}')
-        fig2 = plot_yearly_avg_weighted(topic, topic_per_date)
-        st.plotly_chart(fig2, use_container_width=True)
+topic = default_topic if not selected else selected[0]['y']
+st.subheader(f'Share of positive and negative sentiment for: {emoji_dict[topic]} {topic.capitalize()}')
+fig2 = plot_yearly_avg_weighted(topic, topic_per_date)
+st.plotly_chart(fig2, use_container_width=True)
 
 
 
