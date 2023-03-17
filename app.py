@@ -152,8 +152,8 @@ result = df_new.sum(axis=0)
 positive = result[result.index.str.contains('positive')]
 negative = result[result.index.str.contains('negative')]
 
-positive.index = positive.index.str.replace('t_','').str.replace('_positive','')
-negative.index = negative.index.str.replace('t_','').str.replace('_negative','')
+positive.index = positive.index.str.replace('^t_','', regex=True).str.replace('_positive','')
+negative.index = negative.index.str.replace('^t_','', regex=True).str.replace('_negative','')
 
 all_numpy = np.array(positive) + np.array(negative)
 
