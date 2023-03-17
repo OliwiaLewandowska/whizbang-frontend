@@ -178,14 +178,14 @@ default_topic = categories[-1]
 
 # Create the positive/negative per topics CHART
 
-trace1 = go.Bar(x=positive, y=categories, name='Positive', marker_color='green', orientation='h')
-trace2 = go.Bar(x=negative, y=categories, name='Negative', marker_color='red', orientation='h')
+trace1 = go.Bar(x=positive, y=categories, name='Positive', marker_color='green', orientation='h', showlegend=False)
+trace2 = go.Bar(x=negative, y=categories, name='Negative', marker_color='red', orientation='h', showlegend=False)
 
 # Define the layout
 layout = go.Layout(
                    xaxis_title='Frequency of a Topic in Reviews',
                    barmode='relative',
-                   width=900,
+                   width=700,
                    height=900,
                    margin=dict(t=0)
                    )
@@ -202,7 +202,7 @@ with col1:
     selected = plotly_events(
     fig,
     click_event=True,
-    override_height=600
+    override_height=900
             )
 
 with col2:
@@ -217,7 +217,7 @@ with col2:
             #st.write(review.replace("[","<").replace("]","/>"))
             #st.write('---')
             html_string += f'<p style="font-family: \'IBM Plex Sans\', sans-serif;">{review.replace("[","<").replace("]","/>")}</p><br><hr>'
-        html(html_string, height=600, scrolling=True)
+        html(html_string, height=900, scrolling=True)
 
 
 '---'
