@@ -37,14 +37,14 @@ def plot_yearly_avg_weighted(topic, df):
     df_year_w= df_year_w.groupby('year').mean().reset_index()
     #create scatter chart trace for units sold
     line_positive = go.Scatter(
-        x= df_year_w['year'],
-        y= df_year_w[f't_{topic}_weight_positive'],
+        x= df_year_w['year'][:-1],
+        y= df_year_w[f't_{topic}_weight_positive'][:-1],
         line=dict(color='green', width = 2),
         name=f'Positive Reviews on {topic.upper()}', line_shape='spline')
     # create line chart trace for discounted price
     line_negative = go.Scatter(
-        x= df_year_w['year'],
-        y= df_year_w[f't_{topic}_weight_negative'],
+        x= df_year_w['year'][:-1],
+        y= df_year_w[f't_{topic}_weight_negative'][:-1],
         line=dict(color='red', width = 2),
         name= f'Negative Reviews on {topic.upper()}', line_shape='spline')
     # set layout with dual y-axes
