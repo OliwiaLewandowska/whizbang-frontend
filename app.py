@@ -16,7 +16,7 @@ import pandas as pd
 
 
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="Whizbang !", page_icon=Image.open('favicon.png'))
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
 #st.write("""<div style = 'text-align: center'><h1>Whizbang!</h1></div>""", unsafe_allow_html=True)
@@ -29,7 +29,7 @@ cola, colb, colc, cold, cole = st.columns([1,3,1,3,1])
 
 with colb:
     image = Image.open('logo.png')
-    st.image(image)
+    st.image(image, width=500)
 
 with cold:
     sel_name = st.selectbox('Select Game', name_id_mapping.keys())
@@ -64,7 +64,7 @@ with col2:
 
 total_reviews = game_info['total_reviews']
 voted_up = game_info['voted_up']
-share_positive = f'{round((voted_up / total_reviews),2) * 100}%'
+share_positive = f'{round((voted_up / total_reviews) * 100, 2)}%'
 primary_genre = game_info['genre1']
 secondary_genre = game_info['genre2']
 
@@ -198,15 +198,17 @@ with col2:
 
 #Sentiment Over time
 
-topic_per_date = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/alldata').json()
+data_all = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/alldata').json()
 
-df = pd.DataFrame(topic_per_date['topic_per_date'])
+topic_per_date = pd.DataFrame(data_all['topic_per_date'])
 
 if selected:
         topic = selected[0]['y']
-        st.subheader(f'Share of positive and negative sentiment for {topic} ')
-        fig2 = plot_yearly_avg_weighted(topic, df)
+        st.subheader(f'Share of positive and negative sentiment for: {emoji_dict[topic]} {topic.capitalize()}')
+        fig2 = plot_yearly_avg_weighted(topic, topic_per_date)
         st.plotly_chart(fig2, use_container_width=True)
+
+
 
     # st.write('<p style="font-size:24px;"><b>Uncover most popular reviews per topic</b></p>',unsafe_allow_html=True)
     # if st.button('AI'):
