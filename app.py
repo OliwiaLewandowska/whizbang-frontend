@@ -90,7 +90,7 @@ col5.metric("Share of Positive Sentiment", share_positive)
 
 st.subheader('Cumulative Sales Over Time & Forecast')
 
-game_info = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/game?id=4720').json()
+game_info = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/game?id={sel_id}').json()
 
 dates = [i.replace('our_prediction ','') for i in list(game_info['sales_data_new'].keys())[0:-3]]
 base_prediction = list(game_info['sales_data_new'].values())[0:-6] + list(game_info['sales_data_new'].values())[-3:]
