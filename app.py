@@ -62,7 +62,7 @@ with col1:
     st.image(game_info['image'], width=300)
 
 with col2:
-    st.subheader( 'AI Generated review')
+    st.subheader( 'AI Generated Review')
     game_info['summary_review']
 
 total_reviews = game_info['total_reviews']
@@ -88,7 +88,7 @@ col5.metric("Share of Positive Sentiment", share_positive)
 #Display Forecast
 
 
-st.subheader('Cummulative Sales Over Time & Forecast')
+st.subheader('Cumulative Sales Over Time & Forecast')
 
 dates = list(game_info['sales_data'].keys())[0:-1]
 
@@ -178,7 +178,7 @@ fig.update_layout(
 col1, col2 = st.columns([1, 1 ])
 
 with col1:
-    st.subheader('Frequency of topics in reviews')
+    st.subheader('Frequency of Topics in Reviews')
 
     selected = plotly_events(
     fig,
@@ -196,7 +196,7 @@ with col2:
     with st.container():
 
         topic = default_topic if not selected else selected[0]['y']
-        st.subheader(f'Most popular reviews talking about: {emoji_dict[topic]} {topic.capitalize()}')
+        st.subheader(f'Most Popular Reviews Talking About: {emoji_dict[topic]} {topic.capitalize()}')
         reviews = game_info['top_reviews_per_topic'][f't_{topic}']
         html_string = ""
         for review in reviews:
@@ -216,7 +216,7 @@ topic_per_date = pd.DataFrame(data_all['topic_per_date'])
 col1, col2 = st.columns([2, 1 ])
 with col1:
     topic = default_topic if not selected else selected[0]['y']
-    st.subheader(f'Share of positive and negative sentiment for: {emoji_dict[topic]} {topic.capitalize()}')
+    st.subheader(f'Share of Positive and Negative Sentiment for: {emoji_dict[topic]} {topic.capitalize()}')
     fig2 = plot_yearly_avg_weighted(topic, topic_per_date)
     st.plotly_chart(fig2, use_container_width=True)
 with col2:
@@ -225,7 +225,7 @@ with col2:
 
 ## Most similar games
 '---'
-st.subheader('Most similar games, by topic sentiment')
+st.subheader('Most Similar Games, by Topic Sentiment')
 col1, col2, col3 = st.columns([1, 1, 1])
 columns = [col1, col2, col3 ]
 colindex = 0
