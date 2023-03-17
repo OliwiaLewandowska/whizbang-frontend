@@ -129,7 +129,7 @@ fig.update_layout(
 )
 
 
-#col1, col2 = st.columns([5, 1])
+#col1, col2 = st.columns([5, 1]) sadwef
 
 #with col1:
 st.plotly_chart(fig, use_container_width=True)
