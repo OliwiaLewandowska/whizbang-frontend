@@ -90,17 +90,22 @@ col5.metric("Share of Positive Sentiment", share_positive)
 
 st.subheader('Cumulative Sales Over Time & Forecast')
 
-dates = list(game_info['sales_data'].keys())[0:-1]
+game_info = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/game?id=4720').json()
 
-actual = list(game_info['sales_data'].values())[0:-1]
-predicted = list(game_info['sales_data'].values())#.pop(-2)
-predicted.pop(-2)
+dates = [i.replace('our_prediction ','') for i in list(game_info['sales_data_new'].keys())[0:-3]]
+base_prediction = list(game_info['sales_data_new'].values())[0:-6] + list(game_info['sales_data_new'].values())[-3:]
+our_prediction = list(game_info['sales_data_new'].values())[0:-3]
 
-actual_cum = np.cumsum(actual)
+
+baseline = base_prediction
+predicted = our_prediction
+#predicted.pop(-2)
+
+baseline_cum = np.cumsum(baseline)
 predicted_cum = np.cumsum(predicted)
 
 # Find the index of the first non-zero value in y_values
-start_index = next((i for i, y in enumerate(actual) if y > 0), len(actual))
+start_index = next((i for i, y in enumerate(baseline) if y > 0), len(baseline))
 
 # Adjust the x_values to start at the correct index
 dates = dates[start_index:]
@@ -110,8 +115,9 @@ fig = go.Figure()
 
 # Add a trace for the timeseries & add color
 
-fig.add_trace(go.Scatter(x=dates, y=predicted_cum[start_index:], mode='lines', name = 'predicted', line=dict(color='red', dash = 'dash', width = 3)))
-fig.add_trace(go.Scatter(x=dates, y=actual_cum[start_index:], mode='lines', name = 'actual', line=dict(color='lightgrey', width = 3)))
+fig.add_trace(go.Scatter(x=dates, y=predicted_cum[start_index:], mode='lines', name = 'predicted', line=dict(color='purple', width = 3)))
+fig.add_trace(go.Scatter(x=dates, y=baseline_cum[start_index:], mode='lines', name = 'baseline', line=dict(color='pink', dash = 'dash', width = 2)))
+fig.add_trace(go.Scatter(x=dates, y=baseline_cum[start_index:-3], mode='lines', name = 'historical', line=dict(color='pink', width = 3)))
 
 # Update the layout
 fig.update_layout(
@@ -119,22 +125,22 @@ fig.update_layout(
     margin=dict(t=0),
     xaxis_title='Date',
     yaxis_title='Total Sales',
-    xaxis_tickformat='<br>%Y'
+    xaxis_tickformat='%m<br>%Y'
 )
 
 
-col1, col2 = st.columns([5, 1])
+#col1, col2 = st.columns([5, 1])
 
-with col1:
-    st.plotly_chart(fig, use_container_width=True)
+#with col1:
+st.plotly_chart(fig, use_container_width=True)
 
-with col2:
+#with col2:
 
-    with st.container():
-        st.metric("Predicted Sales", '{:,}'.format(int(predicted[-1])))
-        '---'
-    with st.container():
-        st.metric("Actual Sales", '{:,}'.format(int(actual[-1])))
+    # with st.container():
+    #     st.metric("Predicted Sales", '{:,}'.format(int(predicted[-1])))
+    #     '---'
+    # with st.container():
+    #     st.metric("Actual Sales", '{:,}'.format(int(11111111[-1])))
 
 
 '---'
