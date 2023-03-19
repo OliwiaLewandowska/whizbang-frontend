@@ -147,7 +147,6 @@ st.plotly_chart(fig, use_container_width=True)
 
 #Load & transform data for barchart
 
-game_info = requests.get(f'https://whizbang-xamxpbuwhq-uc.a.run.app/game?id=4720').json()
 df = pd.DataFrame(game_info['ts_reviews'])
 
 df_new = df.iloc[:,2:42]
@@ -170,7 +169,7 @@ all_sorted = all.sort_values(ascending=True)
 positive_sorted = positive.reindex(all_sorted.index)
 negative_sorted = negative.reindex(all_sorted.index)
 
-categories = list(positive.index)
+categories = list(positive_sorted.index)
 positive = list(positive_sorted)
 negative = list(negative_sorted)
 
